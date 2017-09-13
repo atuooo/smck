@@ -58,6 +58,10 @@ class UnUseMethodPlugin {
             Console.outPrint("无用方法", to: .description)
             //找出h文件中没有用过的方法
             var unUsedMethods = [Method]()
+            
+            var lastPath: String = ""
+            var logString: String = ""
+            
             for aHMethod in self.methodsDefinedInHFile {
                 //todo:第一种无参数的情况暂时先过滤。第二种^这种情况过滤
                 if aHMethod.params.count == 1 {
@@ -79,10 +83,23 @@ class UnUseMethodPlugin {
 //                    }
                         unUsedMethods.append(aHMethod)
                         
-                        Console.outPrint("\(aHMethod.pnameId)")
+                        if lastPath != aHMethod.filePath {
+                            logString += "\n\(aHMethod.filePath.removingPercentEncoding!):\n\n- \(aHMethod.pnameId)\n"
+                            
+//                            Console.outPrint("\n\(aHMethod.filePath.removingPercentEncoding!):\n\n- \(aHMethod.pnameId)\n")
+                        } else {
+                            logString += "- \(aHMethod.pnameId)\n"
+//                            Console.outPrint("- \(aHMethod.filePath.removingPercentEncoding!)\n")
+                        }
+                        
+                        lastPath = aHMethod.filePath
+                        
+//                        Console.outPrint("\(aHMethod.filePath): -- \(aHMethod.pnameId)")
                     }
                 }
             }
+            
+            Console.outPrint(logString)
 //            Console.outPrint("\(unUsedMethods)")
         })
     }

@@ -17,7 +17,11 @@ class SeekFolderFiles {
         //深度遍历
         let enumeratorAtPath = fileManager.enumerator(atPath: fileFolderStringPath)
         //过滤文件后缀
-        let filterPath = NSArray(array: (enumeratorAtPath?.allObjects)!).pathsMatchingExtensions(matchingExtension)
+        let filterPath = NSArray(array: (enumeratorAtPath?.allObjects)!)
+                            .pathsMatchingExtensions(matchingExtension)
+                            .filter{ !$0.contains("Pods/") }
+                            .filter{ !$0.contains("Frameworks/") }
+                            .filter{ !$0.contains("工具/Alipay") && !$0.contains("Share/分享sdk/") && !$0.contains("Share/UMengShare/") }
         
         let rePaths = filterPath.map { (aPath) -> String in
             let fullPath = folderPath

@@ -47,14 +47,21 @@ class ParsingEntire {
             let count = filePaths.count
             for filePathString in filePaths {
                 
+                print(filePathString)
                 //读取文件内容
-                let fileUrl = URL(string: filePathString)
+                
+                var thePath = filePathString
+                if filePathString.contains("file://") {
+                    thePath = filePathString.replacingOccurrences(of: "file://", with: "")
+                }
+                
+                let fileUrl = URL.init(fileURLWithPath: thePath) // URL.init(string: thePath) //URL(string: filePathString)
                 
                 if fileUrl == nil {
                     
                 } else {
                     i += 1
-                    _ = ParsingFirstRoundOneFile.parsing(fileUrl: fileUrl!).subscribe(onNext: { (result) in
+                    _ = ParsingFirstRoundOneFile.parsing(fileUrl: fileUrl).subscribe(onNext: { (result) in
                         if result is Dictionary<String, Any> {
                             let dic = result as! Dictionary<String, Any>
                             if dic.keys.contains("macroUsedMethod") {
@@ -97,6 +104,8 @@ class ParsingEntire {
                                 observer.on(.next(["firstRoundAFile" : aFile]))
                                 observer.on(.next(["currentParsingFileDes" : "进度：\(i+1)/\(count) 正在查询文件：\(aFile.name)"]))
                             }
+                        } else {
+                            
                         }
                         
                         

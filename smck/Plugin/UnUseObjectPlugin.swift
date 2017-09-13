@@ -41,7 +41,9 @@ class UnUseObjectPlugin {
                     if value.category.characters.count > 0 || self.whiteList.contains(value.name) {
                     } else {
                         allUnUsedObjects[key] = value
-                        Console.outPrint("\(key)")
+                        if !key.contains("Cell") {
+                            Console.outPrint("- \(key)")
+                        }
                     }
                     continue
                 }

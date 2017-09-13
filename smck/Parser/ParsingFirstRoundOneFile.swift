@@ -26,7 +26,9 @@ class ParsingFirstRoundOneFile {
             aFile.path = fileUrl.absoluteString
             //显示parsing的状态
 //            observer.on(.next(["currentParsingFileDes" : "进度：\(i+1)/\(count) 正在查询文件：\(aFile.name)"]))
-            let content = try! String(contentsOf: fileUrl, encoding: String.Encoding.utf8)
+            guard let content = try? String(contentsOf: fileUrl, encoding: String.Encoding.utf8) else {
+                return Disposables.create {}
+            }
             //print("文件内容: \(content)")
             aFile.content = content
             
@@ -245,7 +247,13 @@ class ParsingFirstRoundOneFile {
                             mtdContentArr.append(tk)
                         } else {
                             aFile.methods.append(parsedMethod)
-                            parsedMethod.filePath = aFile.path //将h文件的路径赋给方法
+                            if aFile.path.hasPrefix("file:///Users/shijinwei/Desktop/TTHH/Tuhu/") {
+                                let tempPath = aFile.path.replacingOccurrences(of: "file:///Users/shijinwei/Desktop/TTHH/Tuhu/", with: "")
+                                parsedMethod.filePath = tempPath
+                            } else {
+                                parsedMethod.filePath = aFile.path //将h文件的路径赋给方法
+                            }
+                            
                             observer.on(.next(["aMtdInHFile" : parsedMethod]))
                             psMtdTf = false
                         }
@@ -266,5 +274,32 @@ class ParsingFirstRoundOneFile {
             
             return Disposables.create {}
         })
+    }
+}
+
+extension String.Encoding {
+    static let gb_18030_2000 = String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.GB_18030_2000.rawValue)))
+}
+
+extension String {
+    func bytesByRemovingPercentEncoding(using encoding: String.Encoding) -> Data {
+        struct My {
+            static let regex = try! NSRegularExpression(pattern: "(%[0-9A-F]{2})|(.)", options: .caseInsensitive)
+        }
+        var bytes = Data()
+        let nsSelf = self as NSString
+        for match in My.regex.matches(in: self, range: NSRange(0..<self.utf16.count)) {
+            if match.rangeAt(1).location != NSNotFound {
+                let hexString = nsSelf.substring(with: NSMakeRange(match.rangeAt(1).location+1, 2))
+                bytes.append(UInt8(hexString, radix: 16)!)
+            } else {
+                let singleChar = nsSelf.substring(with: match.rangeAt(2))
+                bytes.append(singleChar.data(using: encoding) ?? "?".data(using: .ascii)!)
+            }
+        }
+        return bytes
+    }
+    func removingPercentEncoding(using encoding: String.Encoding) -> String? {
+        return String(data: bytesByRemovingPercentEncoding(using: encoding), encoding: encoding)
     }
 }
